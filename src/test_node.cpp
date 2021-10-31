@@ -25,10 +25,10 @@ int main(int argc, char** argv){
     MapLoader loader("/home/biomotion/nuscenes_maps");
 
     ROS_INFO("Loading submap");
-    pcl::PointXYZ point(0, 0, 0);
+    pcl::PointXYZ point(300., 600., 0);
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
     loader.setSearchRadius(100.);
-    if(loader.getSubmaps(point, cloud) != 0){
+    if(loader.getSubmaps(point, cloud) < 0){
         ROS_ERROR("Loading submap fail");
     }
     ROS_INFO("Done loading submap");
