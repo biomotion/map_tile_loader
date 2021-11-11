@@ -43,7 +43,6 @@ int MapLoader::readSubmaps(const std::vector<std::string> &files, pcl::PointClou
             {
                 return STATUS::FAIL;
             }
-            new_cloud->header.frame_id = "map";
         }
         else
         {
