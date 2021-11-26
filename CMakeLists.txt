@@ -40,8 +40,8 @@ include_directories(
 add_library(map_loader SHARED
   src/map_loader.cpp
 )
-target_link_libraries(map_loader ${catkin_LIBRARIES})
 target_include_directories(map_loader PUBLIC include)
+target_link_libraries(map_loader ${catkin_LIBRARIES} jsoncpp)
 
 add_executable(test_node src/test_node.cpp)
 target_link_libraries(test_node map_loader ${catkin_LIBRARIES})
