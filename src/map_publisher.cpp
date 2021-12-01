@@ -23,17 +23,18 @@ public:
         loader.setSearchRadius(100.);
         pub_map = nh.advertise<sensor_msgs::PointCloud2>("/map", 1);
         sub_pose = nh.subscribe("/lidar_pose", 1, &MapPublisher::pose_cb, this);
-        timer = nh.createTimer(ros::Duration(1.), &MapPublisher::timer_cb, this, false, false);
+        timer = nh.createTimer(ros::Duration(30.), &MapPublisher::timer_cb, this, false, false);
 
         ROS_INFO("%s initialized", ros::this_node::getName().c_str());
     }
     void pose_cb(const geometry_msgs::PoseStamped::ConstPtr& pose){
-        // ROS_INFO("pose cb");
+        ROS_INFO("pose cb");
+        ROS_INFO("searching: %f,%f", pose->pose.position.x, pose->pose.position.y);
         pcl::PointXYZ center;
         pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
         center.x = pose->pose.position.x;
         center.y = pose->pose.position.y;
-        center.z = pose->pose.position.z;
+        center.z = 0;
         int status = loader.getSubmaps(center, cloud);
         if(status == STATUS::FAIL){
             ROS_ERROR("Loading submap fail");
@@ -41,11 +42,15 @@ public:
             ROS_INFO("Use same map");
         }else{ // status == STATUS::NEW
             ROS_INFO("New submap published");
+
             pcl::toROSMsg(*cloud, *map_cloud);
+            ROS_INFO("Point cloud size: %d", map_cloud->width);
+            map_cloud->header.stamp = ros::Time::now();
+
             map_cloud->header.frame_id = "world";
             pub_map.publish(*map_cloud);
-            timer.start();
         }
+        timer.start();
         return;
     }
 
@@ -53,7 +58,9 @@ public:
         ROS_INFO("Timer triggered");
         map_cloud->header.stamp = ros::Time::now();
         ROS_INFO("Point cloud size: %d", map_cloud->width);
-        pub_map.publish(*map_cloud);
+        if(map_cloud->width != 0){
+            pub_map.publish(*map_cloud);
+        }
     }
 };
 
