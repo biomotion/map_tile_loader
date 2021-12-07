@@ -14,16 +14,21 @@ class MapPublisher{
     sensor_msgs::PointCloud2::Ptr map_cloud;
     ros::Timer timer;
     MapLoader loader;
+    float search_radius = 50.;
 public:
     MapPublisher(ros::NodeHandle _nh, const std::string map_path)
         :map_cloud(new sensor_msgs::PointCloud2), loader(map_path)
     {
         std::string pose_topic, map_topic;
         this->nh = _nh;
-        loader.setSearchRadius(100.);
+
+        this->nh.param<float>("search_radius", search_radius, 50.);
+
+        loader.setSearchRadius(search_radius);
+
         pub_map = nh.advertise<sensor_msgs::PointCloud2>("/map", 1);
         sub_pose = nh.subscribe("/lidar_pose", 1, &MapPublisher::pose_cb, this);
-        timer = nh.createTimer(ros::Duration(30.), &MapPublisher::timer_cb, this, false, false);
+        // timer = nh.createTimer(ros::Duration(30.), &MapPublisher::timer_cb, this, false, false);
 
         ROS_INFO("%s initialized", ros::this_node::getName().c_str());
     }
@@ -50,7 +55,7 @@ public:
             map_cloud->header.frame_id = "world";
             pub_map.publish(*map_cloud);
         }
-        timer.start();
+        // timer.start();
         return;
     }
 
