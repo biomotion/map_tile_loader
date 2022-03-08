@@ -22,7 +22,7 @@ int main(int argc, char** argv){
 
     pub_map = n.advertise<sensor_msgs::PointCloud2>("/map", 1);
 
-    MapLoader loader("/home/biomotion/nuscenes_maps");
+    MapLoader<pcl::PointXYZ> loader("/home/biomotion/nuscenes_maps");
 
     ROS_INFO("Loading submap");
     pcl::PointXYZ point(300., 600., 0);

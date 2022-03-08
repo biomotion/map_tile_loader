@@ -1,6 +1,7 @@
 #include "map_loader.h"
 
-int MapLoader::readJSONConfig(const std::string filename)
+template <typename PointT>
+int MapLoader<PointT>::readJSONConfig(const std::string filename)
 {
 
     std::ifstream ifd(filename);
@@ -30,23 +31,24 @@ int MapLoader::readJSONConfig(const std::string filename)
     return STATUS::GOOD;
 }
 
-int MapLoader::readSubmaps(const std::vector<std::string> &files, pcl::PointCloud<pcl::PointXYZ>::Ptr &cloud_ptr)
+template <typename PointT>
+int MapLoader<PointT>::readSubmaps(const std::vector<std::string> &files, PointCloudPtr &cloud_ptr)
 {
-    pcl::PointCloud<pcl::PointXYZ>::Ptr new_cloud(new pcl::PointCloud<pcl::PointXYZ>);
-    pcl::PointCloud<pcl::PointXYZ>::Ptr next_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+    PointCloudPtr new_cloud(new PointCloud);
+    PointCloudPtr next_cloud(new PointCloud);
 
     for (std::vector<std::string>::const_iterator it = files.begin(); it != files.end(); it++)
     {
         if (new_cloud->width == 0)
         {
-            if (pcl::io::loadPCDFile<pcl::PointXYZ>(mapPath + "/" + *it, *new_cloud) == -1)
+            if (pcl::io::loadPCDFile<PointT>(mapPath + "/" + *it, *new_cloud) == -1)
             {
                 return STATUS::FAIL;
             }
         }
         else
         {
-            if (pcl::io::loadPCDFile<pcl::PointXYZ>(mapPath + "/" + *it, *next_cloud) == -1)
+            if (pcl::io::loadPCDFile<PointT>(mapPath + "/" + *it, *next_cloud) == -1)
             {
                 return STATUS::FAIL;
             }
@@ -58,7 +60,8 @@ int MapLoader::readSubmaps(const std::vector<std::string> &files, pcl::PointClou
 
 }
 
-void MapLoader::searchNearbySubmaps(const pcl::PointXYZ center, std::vector<std::string> &foundFiles)
+template<typename PointT>
+void MapLoader<PointT>::searchNearbySubmaps(const pcl::PointXYZ center, std::vector<std::string> &foundFiles)
 {
     std::vector<int> pointIndices;
     std::vector<float> pointSquaredDistance;
@@ -71,7 +74,8 @@ void MapLoader::searchNearbySubmaps(const pcl::PointXYZ center, std::vector<std:
     }
 }
 
-int MapLoader::getSubmaps(const pcl::PointXYZ center, pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud_ptr){
+template<typename PointT>
+int MapLoader<PointT>::getSubmaps(const pcl::PointXYZ center, PointCloudPtr &cloud_ptr){
     int ret = STATUS::GOOD;
     std::vector<std::string> mapFilesNearCenter;
     searchNearbySubmaps(center, mapFilesNearCenter);

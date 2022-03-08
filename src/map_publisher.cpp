@@ -1,7 +1,8 @@
 #include <string>
 #include <pcl/point_types.h>
 #include <ros/ros.h>
-#include <geometry_msgs/PoseStamped.h>
+// #include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/PointStamped.h>
 #include "map_loader.h"
 #include <pcl_conversions/pcl_conversions.h>
 #include <sensor_msgs/PointCloud2.h>
@@ -13,7 +14,7 @@ class MapPublisher{
     ros::Subscriber sub_pose;
     sensor_msgs::PointCloud2::Ptr map_cloud;
     ros::Timer timer;
-    MapLoader loader;
+    MapLoader<pcl::PointXYZI> loader;
     float search_radius = 50.;
 public:
     MapPublisher(ros::NodeHandle _nh, const std::string map_path)
@@ -27,18 +28,18 @@ public:
         loader.setSearchRadius(search_radius);
 
         pub_map = nh.advertise<sensor_msgs::PointCloud2>("/map", 1);
-        sub_pose = nh.subscribe("/lidar_pose", 1, &MapPublisher::pose_cb, this);
+        sub_pose = nh.subscribe("/gps", 1, &MapPublisher::point_cb, this);
         // timer = nh.createTimer(ros::Duration(30.), &MapPublisher::timer_cb, this, false, false);
 
         ROS_INFO("%s initialized", ros::this_node::getName().c_str());
     }
-    void pose_cb(const geometry_msgs::PoseStamped::ConstPtr& pose){
+    void point_cb(const geometry_msgs::PointStamped::ConstPtr& msg){
         ROS_INFO("pose cb");
-        ROS_INFO("searching: %f,%f", pose->pose.position.x, pose->pose.position.y);
+        ROS_INFO("searching: %f,%f", msg->point.x, msg->point.y);
         pcl::PointXYZ center;
-        pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
-        center.x = pose->pose.position.x;
-        center.y = pose->pose.position.y;
+        pcl::PointCloud<pcl::PointXYZI>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZI>);
+        center.x = msg->point.x;
+        center.y = msg->point.y;
         center.z = 0;
         int status = loader.getSubmaps(center, cloud);
         if(status == STATUS::FAIL){
@@ -52,7 +53,7 @@ public:
             ROS_INFO("Point cloud size: %d", map_cloud->width);
             map_cloud->header.stamp = ros::Time::now();
 
-            map_cloud->header.frame_id = "world";
+            map_cloud->header.frame_id = "map";
             pub_map.publish(*map_cloud);
         }
         // timer.start();

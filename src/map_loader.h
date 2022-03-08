@@ -22,20 +22,26 @@ namespace STATUS{
     int NEW = 2;
 }
 
+template<typename PointT>
 class MapLoader{
+
+    using PointCloud = typename pcl::PointCloud<PointT>;
+    using PointCloudPtr = typename pcl::PointCloud<PointT>::Ptr;
 
     std::string mapPath;
     std::vector<std::string> submapFiles, mapCloudFiles;
 
-    pcl::PointCloud<pcl::PointXYZ>::Ptr centroidCloud, mapCloud;
+    pcl::PointCloud<pcl::PointXYZ>::Ptr centroidCloud;
     pcl::KdTreeFLANN<pcl::PointXYZ> submapKdtree;
+
+    PointCloudPtr mapCloud;
 
     double searchRad = 50.;
 public:
     MapLoader():centroidCloud(new pcl::PointCloud<pcl::PointXYZ>),
-                mapCloud(new pcl::PointCloud<pcl::PointXYZ>) {}
+                mapCloud(new PointCloud) {}
     MapLoader(const std::string path):centroidCloud(new pcl::PointCloud<pcl::PointXYZ>),
-                                      mapCloud(new pcl::PointCloud<pcl::PointXYZ>) {
+                                      mapCloud(new PointCloud) {
         loadConfig(path);
     }
     int loadConfig(const std::string path){
@@ -43,11 +49,11 @@ public:
         return readJSONConfig(path + "/submaps_config.json");
     }
     int readJSONConfig(const std::string filename);
-    int readSubmaps(const std::vector<std::string>& files, pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud_ptr);
+    int readSubmaps(const std::vector<std::string>& files, PointCloudPtr& cloud_ptr);
     void setSearchRadius(double rad) { searchRad = rad; }
     void searchNearbySubmaps(const pcl::PointXYZ center, std::vector<std::string>& foundFiles);
-    int getSubmaps(const pcl::PointXYZ center, pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud_ptr);
+    int getSubmaps(const pcl::PointXYZ center, PointCloudPtr& cloud_ptr);
 };
 
-
+#include "map_loader.hpp"
 #endif // MAP_LOADER_H
