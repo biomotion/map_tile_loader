@@ -11,7 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_ros
 )
 
-# catkin_package()
+catkin_package()
 
 include_directories(${catkin_INCLUDE_DIRS})
 
