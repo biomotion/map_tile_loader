@@ -34,8 +34,8 @@ public:
         ROS_INFO("%s initialized", ros::this_node::getName().c_str());
     }
     void point_cb(const geometry_msgs::PointStamped::ConstPtr& msg){
-        ROS_INFO("pose cb");
-        ROS_INFO("searching: %f,%f", msg->point.x, msg->point.y);
+        // ROS_INFO("pose cb");
+        // ROS_INFO("searching: %f,%f", msg->point.x, msg->point.y);
         pcl::PointXYZ center;
         pcl::PointCloud<pcl::PointXYZI>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZI>);
         center.x = msg->point.x;
@@ -45,14 +45,13 @@ public:
         if(status == STATUS::FAIL){
             ROS_ERROR("Loading submap fail");
         }else if(status == STATUS::SAME){
-            ROS_INFO("Use same map");
+            // ROS_INFO("Use same map");
         }else{ // status == STATUS::NEW
-            ROS_INFO("New submap published");
+            ROS_INFO("New submap published at center = (%f, %f)", msg->point.x, msg->point.y);
 
             pcl::toROSMsg(*cloud, *map_cloud);
             ROS_INFO("Point cloud size: %d", map_cloud->width);
             map_cloud->header.stamp = ros::Time::now();
-
             map_cloud->header.frame_id = "map";
             pub_map.publish(*map_cloud);
         }
